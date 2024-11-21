@@ -1,106 +1,54 @@
+const sliderTrack = document.querySelector('.slider-track');
+const images = document.querySelectorAll('.slider img');
+const totalImages = images.length;
 let currentIndex = 0;
-const slides = document.querySelectorAll(".slide");
-const totalSlides = slides.length;
-const slidesContainer = document.querySelector(".slides");
-const maxVisibleSlides = 5; // Number of visible slides
 
-// Clone slides for seamless looping
-const clonedSlidesStart = [...slides].slice(0, maxVisibleSlides).map((slide) => slide.cloneNode(true));
-const clonedSlidesEnd = [...slides].slice(-maxVisibleSlides).map((slide) => slide.cloneNode(true));
+// Function to update the image classes
+function updateSlider() {
+  images.forEach((img, i) => {
+    img.classList.remove('active', 'prev', 'next');
+  });
 
-// Append clones to the start and end of the container
-clonedSlidesStart.forEach((clone) => slidesContainer.appendChild(clone));
-clonedSlidesEnd.forEach((clone) => slidesContainer.insertBefore(clone, slidesContainer.firstChild));
+  const active = images[currentIndex];
+  const prev = images[(currentIndex - 1 + totalImages) % totalImages];
+  const next = images[(currentIndex + 1) % totalImages];
 
-// Adjust the container width to account for the cloned slides
-slidesContainer.style.width = `${(totalSlides + 2 * maxVisibleSlides) * (100 / maxVisibleSlides)}%`;
-
-// Offset the slider to start at the original first slide
-slidesContainer.style.transform = `translateX(${-maxVisibleSlides * (100 / maxVisibleSlides)}%)`;
-currentIndex = maxVisibleSlides;
-
-// Function to display slides
-function showSlide(index) {
-    const offset = -index * (100 / maxVisibleSlides);
-    slidesContainer.style.transition = "transform 0.5s ease-in-out";
-    slidesContainer.style.transform = `translateX(${offset}%)`;
-
-    // Adjust for seamless looping
-    setTimeout(() => {
-        if (index >= totalSlides + maxVisibleSlides) {
-            currentIndex = maxVisibleSlides;
-            slidesContainer.style.transition = "none"; // Disable animation
-            slidesContainer.style.transform = `translateX(${-currentIndex * (100 / maxVisibleSlides)}%)`;
-        } else if (index < maxVisibleSlides) {
-            currentIndex = totalSlides + maxVisibleSlides - maxVisibleSlides;
-            slidesContainer.style.transition = "none"; // Disable animation
-            slidesContainer.style.transform = `translateX(${-currentIndex * (100 / maxVisibleSlides)}%)`;
-        }
-    }, 500); // Match the duration of the CSS transition
+  active.classList.add('active');
+  prev.classList.add('prev');
+  next.classList.add('next');
 }
 
-// Function to move slides
-function moveSlide(direction) {
-    currentIndex += direction;
-    showSlide(currentIndex);
+// Move to the next image
+function nextSlide() {
+  currentIndex = (currentIndex + 1) % totalImages;
+  updateSlider();
 }
 
-// Autoplay slider every 3 seconds
-let autoplay = setInterval(() => {
-    moveSlide(1);
-}, 3000);
+// Move to the previous image
+function prevSlide() {
+  currentIndex = (currentIndex - 1 + totalImages) % totalImages;
+  updateSlider();
+}
 
-// Pause autoplay on hover
-document.querySelector(".slider-container").addEventListener("mouseenter", () => {
-    clearInterval(autoplay);
+// Auto-slide every 3 seconds
+let autoSlide = setInterval(nextSlide, 3000);
+
+// Reset auto-slide on button click
+function resetAutoSlide() {
+  clearInterval(autoSlide);
+  autoSlide = setInterval(nextSlide, 3000);
+}
+
+// Event listeners for navigation buttons
+document.querySelector('.next').addEventListener('click', () => {
+  nextSlide();
+  resetAutoSlide();
 });
 
-document.querySelector(".slider-container").addEventListener("mouseleave", () => {
-    autoplay = setInterval(() => {
-        moveSlide(1);
-    }, 3000);
+document.querySelector('.prev').addEventListener('click', () => {
+  prevSlide();
+  resetAutoSlide();
 });
 
-// let currentIndex = 0;
-// const slides = document.querySelectorAll(".slide");
-// const totalSlides = slides.length;
-// const slidesContainer = document.querySelector(".slides");
-
-// const maxVisibleSlides = 5; // Number of visible slides
-
-// // Function to display slides
-// function showSlide(index) {
-//     // Prevent sliding into empty spaces
-//     if (index > totalSlides - maxVisibleSlides) {
-//         currentIndex = totalSlides - maxVisibleSlides; // Stop at the last full set
-//     } else if (index < 0) {
-//         currentIndex = 0; // Stop at the first set
-//     } else {
-//         currentIndex = index;
-//     }
-
-//     // Calculate and apply the offset
-//     const offset = -currentIndex * (100 / maxVisibleSlides);
-//     slidesContainer.style.transform = `translateX(${offset}%)`;
-// }
-
-// // Function to move slides manually
-// function moveSlide(direction) {
-//     showSlide(currentIndex + direction);
-// }
-
-// // Autoplay slider every 3 seconds
-// let autoplay = setInterval(() => {
-//     moveSlide(1);
-// }, 3000);
-
-// // Pause autoplay on hover
-// document.querySelector(".slider-container").addEventListener("mouseenter", () => {
-//     clearInterval(autoplay);
-// });
-
-// document.querySelector(".slider-container").addEventListener("mouseleave", () => {
-//     autoplay = setInterval(() => {
-//         moveSlide(1);
-//     }, 3000);
-// });
+// Initialize the slider
+updateSlider();
